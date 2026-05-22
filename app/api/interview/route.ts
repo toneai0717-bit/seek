@@ -11,6 +11,9 @@ export async function POST(req: NextRequest) {
       )
       .join("\n\n");
 
+    const rallyCount = Math.floor(messages.length / 2);
+    const forceFinish = rallyCount >= 15;
+
     const text = await createMessageWithFallback({
       maxTokens: 512,
       system: `あなたは採用コンサルタントです。採用担当者が「本当に欲しい人材像」を言語化できるよう、深く丁寧にインタビューしてください。
@@ -22,6 +25,7 @@ export async function POST(req: NextRequest) {
 - 表面的な条件（スキル・経験年数）だけでなく、その人が組織でどう動くか・どんな場面で活躍するかを深掘りする
 - 「なぜその条件が必要ですか？」「どんな場面で困っていますか？」「今のチームに何が足りませんか？」のように具体的なエピソードを引き出す
 - 1回の質問は1つだけ。短く、鋭く
+- 現在${rallyCount}往復目。${forceFinish ? "【重要】十分な深掘りが完了しました。必ず「【インタビュー完了】」を返してください。" : "10往復を超えたら積極的に完了を検討する。"}
 - 十分に深掘りできたら「【インタビュー完了】」と返す
 
 【現在の文脈】
