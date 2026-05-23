@@ -38,6 +38,9 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("persona");
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState("");
+  const [buzzJd, setBuzzJd] = useState("");
+  const [buzzGenerating, setBuzzGenerating] = useState(false);
+  const [buzzCopied, setBuzzCopied] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
 
   function showToast(msg: string) {
@@ -115,6 +118,30 @@ export default function Home() {
       showToast("レポート生成に失敗しました");
     } finally {
       setGenerating(false);
+    }
+  }
+
+  async function generateBuzzJd() {
+    if (!result) return;
+    setBuzzGenerating(true);
+    try {
+      const res = await fetch("/api/buzz", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          persona: result.persona,
+          must: result.must,
+          want: result.want,
+          ng: result.ng,
+          jobContext,
+        }),
+      });
+      const data = await res.json();
+      if (data.buzzJd) setBuzzJd(data.buzzJd);
+    } catch {
+      showToast("生成に失敗しました");
+    } finally {
+      setBuzzGenerating(false);
     }
   }
 
@@ -316,10 +343,41 @@ export default function Home() {
           </div>
 
           {activeTab === "jd" && (
-            <div className="bg-violet-50 border border-violet-100 rounded-2xl p-4 mb-4">
-              <p className="text-xs font-bold text-violet-600 mb-1">TRACEと連携する</p>
-              <p className="text-xs text-slate-600">上の求人票をコピーして、TRACEに貼り付けるとシミュレーションを即開始できます。</p>
-            </div>
+            <>
+              <div className="bg-violet-50 border border-violet-100 rounded-2xl p-4 mb-4">
+                <p className="text-xs font-bold text-violet-600 mb-1">TRACEと連携する</p>
+                <p className="text-xs text-slate-600">上の求人票をコピーして、TRACEに貼り付けるとシミュレーションを即開始できます。</p>
+              </div>
+
+              <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <div>
+                    <p className="text-xs font-bold text-orange-600 mb-0.5">🔥 バズる求人票</p>
+                    <p className="text-xs text-slate-500">正直すぎる・ぶっちゃけすぎる求人票でSNSの話題を作る</p>
+                  </div>
+                  <button
+                    onClick={generateBuzzJd}
+                    disabled={buzzGenerating}
+                    className="text-xs bg-orange-500 hover:bg-orange-400 text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-30 flex-shrink-0"
+                  >
+                    {buzzGenerating ? "生成中..." : "生成する"}
+                  </button>
+                </div>
+                {buzzJd && (
+                  <div className="mt-3 bg-white rounded-xl p-4 border border-orange-100">
+                    <div className="flex justify-end mb-2">
+                      <button
+                        onClick={() => { navigator.clipboard.writeText(buzzJd); setBuzzCopied(true); setTimeout(() => setBuzzCopied(false), 2000); }}
+                        className="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        {buzzCopied ? "✅ コピーした" : "コピー"}
+                      </button>
+                    </div>
+                    <pre className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap font-sans">{buzzJd}</pre>
+                  </div>
+                )}
+              </div>
+            </>
           )}
 
           <div className="flex gap-3">
