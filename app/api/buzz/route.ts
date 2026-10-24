@@ -37,7 +37,7 @@ ${ng}
 </BUZZ_JD>`,
     });
 
-    const match = text.match(/<BUZZ_JD>(.*?)<\/BUZZ_JD>/s);
+    const match = text.match(/<BUZZ_JD>([\s\S]*?)<\/BUZZ_JD>/);
     const buzzJd = match ? match[1].trim() : text.trim();
 
     return NextResponse.json({ buzzJd });
